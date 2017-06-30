@@ -1,0 +1,1152 @@
+LAB1
+000100 IDENTIFICATION DIVISION.                                         
+000200 PROGRAM-ID. LAB1.                                                
+000300 DATA DIVISION.                                                   
+000400 WORKING-STORAGE SECTION.                                         
+       01  RECL    PIC S9(4) COMP.                                      
+       01  RNAME  PIC X(8).                                             
+       01  RPSW  PIC X(6).                                              
+       01  COMAREA.                                                     
+           02 CNAME PIC X(8).                                           
+           02 CRIGHT PIC X(1).                                          
+       01  RCODE PIC S9(4) COMP.                                        
+       01  USERREC.                                                     
+           02   YNAEM  PIC X(8).                                        
+           02   YPSW   PIC X(6).                                        
+           02   YAGE   PIC 9(3).                                        
+          02   YRIGHT PIC X.                                           
+            COPY STU090A.                                              
+            COPY DFHAID.                                               
+      PROCEDURE DIVISION.                                              
+      SEND-LOGINMAP.                                                   
+          EXEC CICS SEND MAP('LOGINPZ') MAPSET('STU090A') ERASE        
+               MAPONLY END-EXEC.                                       
+          EVALUATE TRUE                                                
+     *       WHEN EIBCALEN = ZERO                                      
+     *         MOVE LOW-VALUE TO LOGINPZO                              
+     *         PERFORM SEND-LOGINMAP                                   
+             WHEN EIBAID = DFHPF12                                     
+               MOVE LOW-VALUE TO LOGINPZO                              
+               PERFORM SEND-LOGINMAP                                   
+             WHEN EIBAID = DFHENTER                                    
+               PERFORM PROCESS-LOGIN                                   
+             WHEN EIBAID = DFHPF1                                      
+               EXEC CICS RETURN END-EXEC                               
+       END-EVALUATE.                                                
+     *    EXEC CICS RETURN TRANSID('PZXT') COMMAREA(COMAREA) END-EXEC. 
+   PROCESS-LOGIN.                                                   
+       EXEC CICS RECEIVE MAP('LOGINPZ') MAPSET('STU090A') END-EXEC  
+       MOVE 18 TO RECL                                              
+       MOVE UNAMEI TO RNAME                                         
+       MOVE UPSWI TO RPSW                                           
+       IF UNAMEI EQUAL LOW-VALUE OR UPSWI EQUAL LOW-VALUE           
+          MOVE 'PLEASE ENTER NAME AND PASSWORD!!!' TO LOGMSGO       
+          EXEC CICS SEND MAP('LOGINPZ') MAPSET('STU090A') ERASE     
+               END-EXEC                                             
+       ELSE                                                         
+          EXEC CICS READ FILE('YONGH090') INTO(USERREC)             
+                    RIDFLD(UNAMEI)                                  
+                    RESP(RCODE) LENGTH(RECL) END-EXEC               
+          IF YPSW NOT EQUAL UPSWI OR RCODE NOT EQUAL DFHRESP(NORMAL)
+            MOVE 'NAME OR PASSWORD IS WRONG!' TO LOGMSGO            
+   *         STRING 'YPSW IS' YPSW DELIMITED BY SIZE INTO LOGMSGO    
+   *         STRING LOGMSGO ' UPSWI IS ' UPSWI DELIMITED BY SIZE INTO
+   *              LOGMSGO                                            
+   *         MOVE USERREC TO LOGMSGO                                 
+             EXEC CICS SEND MAP('LOGINPZ') MAPSET('STU090A') ERASE   
+                 END-EXEC                                            
+           ELSE                                                      
+             MOVE UNAMEI TO CNAME                                    
+             MOVE YRIGHT TO CRIGHT                                   
+             EXEC CICS SEND MAP('SELECTF') MAPSET('STU090A')         
+                  ERASE END-EXEC                                     
+             EXEC CICS RETURN TRANSID('0902')                        
+                COMMAREA(COMAREA) LENGTH(9) END-EXEC                 
+   *         MOVE 'RIGHT' TO LOGMSGO                                 
+   *         EXEC CICS SEND MAP('LOGINPZ') MAPSET('STU090A') ERASE   
+   *             END-EXEC                                            
+           END-IF                                                    
+         END-IF                                                      
+         EXIT.                                                       
+
+
+
+
+
+LAB10
+ 000100 IDENTIFICATION DIVISION.           
+ 000200 PROGRAM-ID. LAB10.                 
+ 000300 DATA DIVISION.                     
+ 000400 WORKING-STORAGE SECTION.           
+              COPY STU090A.                
+              COPY STU090C.                
+              COPY DFHAID.                 
+        01 RCODE PIC S9(4) COMP.           
+        01 USERREC.                        
+           02 USERNA PIC X(8).             
+           02 USERPS  PIC X(6).            
+           02 USERAG  PIC 9(3).            
+           02 USERRI  PIC X(1).            
+        LINKAGE SECTION.                   
+        01 DFHCOMMAREA.                    
+        02 CNAME PIC X(8).                                         
+        02 CRIGHT PIC X.                                           
+    PROCEDURE DIVISION.                                            
+        EVALUATE TRUE                                              
+             WHEN EIBAID = DFHPF12                                 
+               MOVE LOW-VALUE TO USERINFO                          
+               PERFORM SEND-USERINF                                
+             WHEN EIBAID = DFHENTER                                
+               PERFORM PROCESS-ADD                                 
+             WHEN EIBAID = DFHPF1                                  
+               EXEC CICS RETURN END-EXEC                           
+             WHEN EIBAID = DFHPF3                                  
+               PERFORM RETURN-FUN                                  
+        END-EVALUATE.                                              
+    SEND-USERINF.                                                  
+        MOVE LOW-VALUE TO USERINFO.                                
+        EXEC CICS SEND MAP('USERINF') MAPSET('STU090C') ERASE      
+            END-EXEC.                                              
+        EXEC CICS RETURN TRANSID('0910') END-EXEC.                   
+    PROCESS-ADD.                                                     
+        EXEC CICS RECEIVE MAP('USERINF') MAPSET('STU090C') END-EXEC. 
+        MOVE USER-NAO TO USERNA.                                     
+        MOVE USER-PSO TO USERPS.                                     
+        MOVE USER-AGO TO USERAG.                                     
+        MOVE USER-RIO TO USERRI.                                     
+        EXEC CICS WRITE FROM(USERREC) FILE('YONGH090')               
+           RIDFLD(USERNA)  RESP(RCODE) END-EXEC                      
+        IF RCODE EQUAL DFHRESP(NORMAL)                               
+          MOVE 'ADD SUCCESSFULLY!!!' TO USERMSGO                     
+        ELSE                                                         
+          MOVE 'ADD FAILED!!!' TO USERMSGO                           
+        END-IF.                                                      
+        EXEC CICS SEND MAP('USERINF') MAPSET('STU090C') END-EXEC.    
+    RETURN-FUN.                                                      
+        EXEC CICS SEND MAP('SELECTF') MAPSET('STU090A')              
+           ERASE END-EXEC.                                           
+           EXEC CICS RETURN TRANSID('0902')   
+              END-EXEC.                       
+      *    EXIT.                              
+
+
+
+LAB11
+ 000100 IDENTIFICATION DIVISION.     
+ 000200 PROGRAM-ID. LAB4.            
+ 000300 DATA DIVISION.               
+ 000400 WORKING-STORAGE SECTION.     
+              COPY STU090A.          
+              COPY STU090B.          
+              COPY DFHAID.           
+        01 RCODE PIC S9(4) COMP.     
+        01 CNUM PIC 9(4).            
+        01 CERREC.                   
+           02 CERNUM PIC 9(4).       
+           02 CERDATE PIC X(10).     
+           02 SUBDE PIC X(20).       
+           02 NUMDE PIC 9(8).        
+           02 SUBCR PIC X(20).       
+        02 NUMCR PIC 9(8).                     
+        02 FILLOR PIC X(8).                    
+        02 ADUITOR PIC X(8).                   
+     LINKAGE SECTION.                          
+     01 DFHCOMMAREA.                           
+         02 CNAME PIC X(8).                    
+         02 CRIGHT PIC X.                      
+     PROCEDURE DIVISION.                       
+         EVALUATE TRUE                         
+              WHEN EIBAID = DFHPF12            
+                MOVE LOW-VALUE TO CERFUNO      
+                PERFORM SEND-CERFUN            
+              WHEN EIBAID = DFHENTER           
+                PERFORM PROCESS-INQUIRE        
+              WHEN EIBAID = DFHPF1             
+                EXEC CICS RETURN END-EXEC      
+              WHEN EIBAID = DFHPF3             
+                PERFORM RETURN-FUN             
+        END-EVALUATE.                                                
+    SEND-CERFUN.                                                     
+        MOVE 'UPDATE'    TO CERFUNO.                                 
+        EXEC CICS SEND MAP('CERTFUN') MAPSET('STU090B') ERASE        
+            END-EXEC.                                                
+        EXEC CICS RETURN TRANSID('0904') END-EXEC.                   
+    PROCESS-INQUIRE.                                                 
+        EXEC CICS RECEIVE MAP('CERTFUN') MAPSET('STU090B') END-EXEC. 
+        MOVE CERNUMO TO CNUM.                                        
+        EXEC CICS READ FILE('PINGZ090') INTO(CERREC)                 
+          RIDFLD(CNUM) RESP(RCODE) END-EXEC.                         
+        IF RCODE EQUAL DFHRESP(NORMAL)                               
+          IF CRIGHT = 0                                              
+            MOVE CERNUM TO CER-NUMO                                  
+            MOVE CERDATE TO CE-DATEO                                 
+            MOVE SUBDE TO SUB-DEO                                    
+            MOVE NUMDE TO NUM-DEO                                    
+            MOVE SUBCR TO SUB-CRO                                    
+           MOVE NUMCR TO NUM-CRO                                    
+           MOVE FILLOR TO FILLERO                                   
+           EXEC CICS SEND MAP('CERTIFI') MAPSET('STU090B')          
+              ERASE END-EXEC                                        
+           EXEC CICS RETURN TRANSID('9041') COMMAREA(CNUM) END-EXEC 
+         ELSE IF CRIGHT = 1 AND CNAME = FILLOR                      
+           MOVE CERNUM TO CER-NUMO                                  
+           MOVE CERDATE TO CE-DATEO                                 
+           MOVE SUBDE TO SUB-DEO                                    
+           MOVE NUMDE TO NUM-DEO                                    
+           MOVE SUBCR TO SUB-CRO                                    
+           MOVE NUMCR TO NUM-CRO                                    
+           MOVE FILLOR TO FILLERO                                   
+           EXEC CICS SEND MAP('CERTIFI') MAPSET('STU090B')          
+              ERASE END-EXEC                                        
+           EXEC CICS RETURN TRANSID('9041') COMMAREA(CNUM) END-EXEC 
+         ELSE                                                       
+  *        MOVE 'NO RIGHT!!!' TO CERMSGO                            
+             MOVE CNUM TO CERMSGO                                     
+             EXEC CICS SEND MAP('CERTIFI') MAPSET('STU090B') END-EXEC 
+           END-IF                                                     
+         ELSE                                                         
+           MOVE 'INQUIRE FAILED!!!' TO CERMSGO                        
+           EXEC CICS SEND MAP('CERTIFI') MAPSET('STU090B') END-EXEC   
+         END-IF.                                                      
+     RETURN-FUN.                                                      
+         EXEC CICS SEND MAP('SELECTF') MAPSET('STU090A')              
+            ERASE END-EXEC.                                           
+         EXEC CICS RETURN TRANSID('0902') COMMAREA(DFHCOMMAREA)       
+            END-EXEC.                                                 
+    *    EXIT.                                                        
+
+
+
+
+
+
+LAB2
+
+000100 IDENTIFICATION DIVISION.       
+000200 PROGRAM-ID. LAB2.              
+000300 DATA DIVISION.                 
+000400 WORKING-STORAGE SECTION.       
+       01 TSTAMP PIC S9(15) COMP-3.   
+       01 RCODE PIC S9(4) COMP.       
+       01 CERREC.                     
+          02 CERNUM PIC 9(4).         
+          02 CERDATE PIC X(10).       
+          02 SUBDE PIC X(20).         
+          02 NUMDE PIC 9(8).          
+          02 SUBCR PIC X(20).         
+          02 NUMCR PIC 9(8).          
+          02 FILLOR PIC X(8).         
+          02 ADUITOR PIC X(8).        
+        COPY STU090A.                                     
+        COPY STU090B.                                     
+        COPY STU090C.                                     
+        COPY STU090D.                                     
+        COPY DFHAID.                                      
+    LINKAGE SECTION.                                      
+    01 DFHCOMMAREA.                                       
+        02 CNAME PIC X(8).                                
+        02 CRIGHT PIC X.                                  
+    PROCEDURE DIVISION.                                   
+   *    EVALUATE TRUE                                     
+   *         WHEN EIBAID = DFHPF12                        
+   *           MOVE LOW-VALUE TO SELECTFO                 
+   *           PERFORM SEND-FUNMAP                        
+   *         WHEN EIBAID = DFHENTER                       
+   *           PERFORM PROCESS-FUN                        
+   *         WHEN EIBAID = DFHPF1                         
+   *           EXEC CICS RETURN END-EXEC                  
+   *         WHEN EIBAID = DFHPF3                                   
+   *           PERFORM RETURN-LOGIN                                 
+   *    END-EVALUATE.                                               
+        IF EIBAID = DFHPF12                                         
+          PERFORM SEND-FUNMAP                                       
+        ELSE IF EIBAID = DFHENTER                                   
+          PERFORM PROCESS-FUN                                       
+        ELSE IF EIBAID = DFHPF1                                     
+          EXEC CICS RETURN END-EXEC                                 
+        ELSE IF EIBAID = DFHPF3                                     
+          PERFORM RETURN-LOGIN                                      
+        END-IF.                                                     
+   *    GOBACK.                                                     
+    SEND-FUNMAP.                                                    
+        MOVE LOW-VALUE TO SELECTFO.                                 
+        MOVE DFHCOMMAREA TO FUNMSGO.                                
+        EXEC CICS SEND MAP('SELECTF') MAPSET('STU090A') ERASE       
+            END-EXEC.                                               
+    PROCESS-FUN.                                                     
+        EXEC CICS RECEIVE MAP('SELECTF') MAPSET('STU090A') END-EXEC. 
+        IF FUNCODEI = 0                                              
+          MOVE LOW-VALUE TO CERTIFIO                                 
+   ***********************RECORD LENGTH************                  
+          EXEC CICS STARTBR FILE('PINGZ090') RIDFLD(CERNUM)          
+            RESP(RCODE) END-EXEC                                     
+          IF RCODE EQUAL DFHRESP(NORMAL)                             
+            PERFORM UNTIL RCODE EQUAL DFHRESP(ENDFILE)               
+              EXEC CICS READNEXT FILE('PINGZ090') INTO(CERREC)       
+                RIDFLD(CERNUM) RESP(RCODE) END-EXEC                  
+            END-PERFORM                                              
+          END-IF                                                     
+          EXEC CICS ENDBR FILE('PINGZ090') END-EXEC                  
+          MOVE CERNUM TO CER-NUMO                                    
+          ADD 1 TO CER-NUMO                                          
+   *********************************************************         
+          EXEC CICS ASKTIME ABSTIME(TSTAMP) END-EXEC                 
+         EXEC CICS FORMATTIME ABSTIME(TSTAMP)                      
+             DATESEP MMDDYYYY(CE-DATEO) END-EXEC                   
+         MOVE CNAME TO FILLERO                                     
+         EXEC CICS SEND MAP('CERTIFI') MAPSET('STU090B')           
+              ERASE END-EXEC                                       
+         EXEC CICS RETURN TRANSID('0903')                          
+             COMMAREA(DFHCOMMAREA) LENGTH(9) END-EXEC              
+       ELSE IF FUNCODEI = 1                                        
+         MOVE LOW-VALUE TO CERTFUNO                                
+         MOVE 'UPDATE' TO CERFUNO                                  
+         EXEC CICS SEND MAP('CERTFUN') MAPSET('STU090B') ERASE     
+           END-EXEC                                                
+         EXEC CICS RETURN TRANSID('0904') COMMAREA(DFHCOMMAREA)    
+           END-EXEC                                                
+       ELSE IF FUNCODEI = 2                                        
+         MOVE LOW-VALUE TO CERTFUNO                                
+         MOVE 'INQUIRE' TO CERFUNO                                 
+         EXEC CICS SEND MAP('CERTFUN') MAPSET('STU090B') ERASE     
+            END-EXEC                                               
+          EXEC CICS RETURN TRANSID('0905') COMMAREA(DFHCOMMAREA)   
+            END-EXEC                                               
+        ELSE IF FUNCODEI = 3                                       
+          MOVE LOW-VALUE TO CERTFUNO                               
+          MOVE 'DELETE' TO CERFUNO                                 
+          EXEC CICS SEND MAP('CERTFUN') MAPSET('STU090B') ERASE    
+            END-EXEC                                               
+          EXEC CICS RETURN TRANSID('0906') COMMAREA(DFHCOMMAREA)   
+            END-EXEC                                               
+        ELSE IF FUNCODEI = 4                                       
+          MOVE LOW-VALUE TO SUMDATAO                               
+          EXEC CICS SEND MAP('SUMDATA') MAPSET('STU090D') ERASE    
+            END-EXEC                                               
+          EXEC CICS RETURN TRANSID('0908') COMMAREA(DFHCOMMAREA)   
+            END-EXEC                                               
+        ELSE IF FUNCODEI = 5                                       
+          MOVE LOW-VALUE TO MONEYSO                                
+         EXEC CICS SEND MAP('MONEYS') MAPSET('STU090D') ERASE       
+           END-EXEC                                                 
+         EXEC CICS RETURN TRANSID('0909') COMMAREA(DFHCOMMAREA)     
+           END-EXEC                                                 
+       ELSE IF FUNCODEI = 6                                         
+         IF CRIGHT = 0                                              
+           MOVE LOW-VALUE TO CERTFUNO                               
+  *        MOVE 'ADUIT' TO CERFUNO                                  
+           EXEC CICS SEND MAP('CERTFUN') MAPSET('STU090B') ERASE    
+             END-EXEC                                               
+           EXEC CICS RETURN TRANSID('0907') COMMAREA(DFHCOMMAREA)   
+             END-EXEC                                               
+         ELSE                                                       
+           MOVE 'NO RIGHT!!!' TO FUNMSGO                            
+           EXEC CICS SEND MAP('SELECTF') MAPSET('STU090A')          
+             ERASE END-EXEC                                         
+           EXEC CICS RETURN TRANSID('0902') COMMAREA(DFHCOMMAREA)   
+             END-EXEC                                               
+         END-IF                                                     
+       ELSE IF FUNCODEI = 7                                         
+         IF CRIGHT = 0                                              
+           MOVE LOW-VALUE TO USERINFO                               
+  *        MOVE 'ADD' TO USER-FUO                                   
+           EXEC CICS SEND MAP('USERINF') MAPSET('STU090C') ERASE    
+             END-EXEC                                               
+           EXEC CICS RETURN TRANSID('0910') COMMAREA(DFHCOMMAREA)   
+             END-EXEC                                               
+         ELSE                                                       
+           MOVE 'NO RIGHT!!!' TO FUNMSGO                            
+           EXEC CICS SEND MAP('SELECTF') MAPSET('STU090A')          
+             ERASE END-EXEC                                         
+           EXEC CICS RETURN TRANSID('0902') COMMAREA(DFHCOMMAREA)   
+             END-EXEC                                               
+         END-IF                                                     
+       ELSE IF FUNCODEI = 8                                         
+         IF CRIGHT = 0                                              
+           MOVE LOW-VALUE TO USERFUNO                               
+           MOVE 'UPDATE' TO USER-FUO                                
+           EXEC CICS SEND MAP('USERFUN') MAPSET('STU090C') ERASE    
+             END-EXEC                                               
+           EXEC CICS RETURN TRANSID('0911') COMMAREA(DFHCOMMAREA)   
+             END-EXEC                                               
+         ELSE                                                       
+           MOVE 'NO RIGHT!!!' TO FUNMSGO                            
+           EXEC CICS SEND MAP('SELECTF') MAPSET('STU090A')          
+             ERASE END-EXEC                                         
+           EXEC CICS RETURN TRANSID('0902') COMMAREA(DFHCOMMAREA)   
+             END-EXEC                                               
+         END-IF                                                     
+       ELSE IF FUNCODEI = 9                                         
+         IF CRIGHT = 0                                              
+           MOVE LOW-VALUE TO USERFUNO                               
+           MOVE 'DELETE' TO USER-FUO                                
+           EXEC CICS SEND MAP('USERFUN') MAPSET('STU090C') ERASE    
+               END-EXEC                                               
+             EXEC CICS RETURN TRANSID('0912') COMMAREA(DFHCOMMAREA)   
+               END-EXEC                                               
+           ELSE                                                       
+             MOVE 'NO RIGHT!!!' TO FUNMSGO                            
+             EXEC CICS SEND MAP('SELECTF') MAPSET('STU090A')          
+               ERASE END-EXEC                                         
+             EXEC CICS RETURN TRANSID('0902') COMMAREA(DFHCOMMAREA)   
+               END-EXEC                                               
+           END-IF                                                     
+         END-IF.                                                      
+     RETURN-LOGIN.                                                    
+         MOVE LOW-VALUE TO LOGINPZO.                                  
+         EXEC CICS SEND MAP('LOGINPZ') MAPSET('STU090A') ERASE        
+            END-EXEC.                                                 
+         EXEC CICS RETURN TRANSID('PZXT') END-EXEC.                   
+
+
+
+
+
+
+LAB3
+000100 IDENTIFICATION DIVISION.                                         
+000200 PROGRAM-ID. LAB3.                                                
+000300 DATA DIVISION.                                                   
+000400 WORKING-STORAGE SECTION.                                         
+             COPY STU090A.                                              
+             COPY STU090B.                                              
+             COPY DFHAID.                                               
+       01 TSTAMP PIC S9(15) COMP-3.                                     
+       01 RCODE PIC S9(4) COMP.                                         
+       01 CERREC.                                                       
+          02 CERNUM PIC 9(4).                                           
+          02 CERDATE PIC X(10).                                         
+          02 SUBDE PIC X(20).                                           
+          02 NUMDE PIC 9(8).                                            
+          02 SUBCR PIC X(20).                                           
+          02 NUMCR PIC 9(8).                                            
+          02 FILLOR PIC X(8).                                           
+          02 ADUITOR PIC X(8).                                          
+       LINKAGE SECTION.                                                 
+       01 DFHCOMMAREA.                                                  
+           02 CNAME PIC X(8).                                           
+           02 CRIGHT PIC X.                                             
+       PROCEDURE DIVISION.                                              
+           EVALUATE TRUE                                                
+                WHEN EIBAID = DFHPF12                                   
+                  MOVE LOW-VALUE TO CERTIFIO                            
+                  PERFORM SEND-CERTIFICATE                              
+                WHEN EIBAID = DFHENTER                                  
+                  PERFORM PROCESS-ADD                                   
+                WHEN EIBAID = DFHPF1                                    
+                  EXEC CICS RETURN END-EXEC                             
+                WHEN EIBAID = DFHPF3                                    
+                  PERFORM RETURN-FUN                                    
+        END-EVALUATE.                                                
+   SEND-CERTIFICATE.                                                
+       PERFORM GET-DATE.                                            
+       MOVE CNAME       TO FILLERO.                                 
+       EXEC CICS SEND MAP('CERTIFI') MAPSET('STU090B') ERASE        
+           END-EXEC.                                                
+   PROCESS-ADD.                                                     
+       EXEC CICS RECEIVE MAP('CERTIFI') MAPSET('STU090B') END-EXEC. 
+       MOVE CER-NUMO TO CERNUM.                                     
+       MOVE CE-DATEO TO CERDATE.                                    
+       MOVE SUB-DEO TO SUBDE.                                       
+       MOVE NUM-DEO TO NUMDE.                                       
+       MOVE SUB-CRO TO SUBCR.                                       
+       MOVE NUM-CRO TO NUMCR.                                       
+       MOVE FILLERO TO FILLOR.                                      
+       EXEC CICS WRITE FROM(CERREC) FILE('PINGZ090') RIDFLD(CERNUM) 
+            RESP(RCODE) END-EXEC                                    
+       IF RCODE EQUAL DFHRESP(NORMAL)                               
+            MOVE 'ADD SUCCESSFULLY!!!' TO CERMSGO                      
+         ELSE                                                         
+           MOVE 'ADD FAILED!!!' TO CERMSGO                            
+         END-IF.                                                      
+         EXEC CICS SEND MAP('CERTIFI') MAPSET('STU090B') END-EXEC.    
+     GET-DATE.                                                        
+         EXEC CICS ASKTIME ABSTIME(TSTAMP) END-EXEC.                  
+         EXEC CICS FORMATTIME ABSTIME(TSTAMP)                         
+             DATESEP MMDDYYYY(CE-DATEO) END-EXEC.                     
+     RETURN-FUN.                                                      
+         EXEC CICS SEND MAP('SELECTF') MAPSET('STU090A')              
+            ERASE END-EXEC.                                           
+         EXEC CICS RETURN TRANSID('0902') COMMAREA(DFHCOMMAREA)       
+            END-EXEC.                                                 
+    *    EXIT.                                                        
+
+
+
+
+LAB4
+000100 IDENTIFICATION DIVISION.                          
+000200 PROGRAM-ID. LAB4.                                 
+000300 DATA DIVISION.                                    
+000400 WORKING-STORAGE SECTION.                          
+             COPY STU090A.                               
+             COPY STU090B.                               
+             COPY DFHAID.                                
+       01 RCODE PIC S9(4) COMP.                          
+       01 CNUM PIC 9(4).                                 
+       01 CERREC.                                        
+          02 CERNUM PIC 9(4).                            
+          02 CERDATE PIC X(10).                          
+          02 SUBDE PIC X(20).                            
+          02 NUMDE PIC 9(8).                             
+          02 SUBCR PIC X(20).                            
+      02 NUMCR PIC 9(8).                              
+      02 FILLOR PIC X(8).                             
+      02 ADUITOR PIC X(8).                            
+   LINKAGE SECTION.                                   
+   01 DFHCOMMAREA.                                    
+       02 CNAME PIC X(8).                             
+       02 CRIGHT PIC X.                               
+   PROCEDURE DIVISION.                                
+       EVALUATE TRUE                                  
+            WHEN EIBAID = DFHPF12                     
+              MOVE LOW-VALUE TO CERFUNO               
+              PERFORM SEND-CERFUN                     
+            WHEN EIBAID = DFHENTER                    
+              PERFORM PROCESS-INQUIRE                 
+            WHEN EIBAID = DFHPF1                      
+              EXEC CICS RETURN END-EXEC               
+            WHEN EIBAID = DFHPF3                      
+              PERFORM RETURN-FUN                      
+        END-EVALUATE.                                                
+    SEND-CERFUN.                                                     
+        MOVE 'UPDATE'    TO CERFUNO.                                 
+        EXEC CICS SEND MAP('CERTFUN') MAPSET('STU090B') ERASE        
+            END-EXEC.                                                
+        EXEC CICS RETURN TRANSID('0904') END-EXEC.                   
+    PROCESS-INQUIRE.                                                 
+        EXEC CICS RECEIVE MAP('CERTFUN') MAPSET('STU090B') END-EXEC. 
+        MOVE CERNUMO TO CNUM.                                        
+        EXEC CICS READ FILE('PINGZ090') INTO(CERREC)                 
+          RIDFLD(CNUM) RESP(RCODE) END-EXEC.                         
+        IF RCODE EQUAL DFHRESP(NORMAL)                               
+          IF CRIGHT = 0                                              
+            MOVE CERNUM TO CER-NUMO                                  
+            MOVE CERDATE TO CE-DATEO                                 
+            MOVE SUBDE TO SUB-DEO                                    
+            MOVE NUMDE TO NUM-DEO                                    
+            MOVE SUBCR TO SUB-CRO                                    
+            MOVE NUMCR TO NUM-CRO                                    
+            MOVE FILLOR TO FILLERO                                   
+            EXEC CICS SEND MAP('CERTIFI') MAPSET('STU090B')          
+               ERASE END-EXEC                                        
+            EXEC CICS RETURN TRANSID('9041') COMMAREA(CNUM) END-EXEC 
+          ELSE IF CRIGHT = 1 AND CNAME = FILLOR                      
+            MOVE CERNUM TO CER-NUMO                                  
+            MOVE CERDATE TO CE-DATEO                                 
+            MOVE SUBDE TO SUB-DEO                                    
+            MOVE NUMDE TO NUM-DEO                                    
+            MOVE SUBCR TO SUB-CRO                                    
+            MOVE NUMCR TO NUM-CRO                                    
+            MOVE FILLOR TO FILLERO                                   
+            EXEC CICS SEND MAP('CERTIFI') MAPSET('STU090B')          
+               ERASE END-EXEC                                        
+            EXEC CICS RETURN TRANSID('9041') COMMAREA(CNUM) END-EXEC 
+          ELSE                                                       
+   *        MOVE 'NO RIGHT!!!' TO CERMSGO                            
+             MOVE CNUM TO CERMSGO                                     
+             EXEC CICS SEND MAP('CERTIFI') MAPSET('STU090B') END-EXEC 
+           END-IF                                                     
+         ELSE                                                         
+           MOVE 'INQUIRE FAILED!!!' TO CERMSGO                        
+           EXEC CICS SEND MAP('CERTIFI') MAPSET('STU090B') END-EXEC   
+         END-IF.                                                      
+     RETURN-FUN.                                                      
+         EXEC CICS SEND MAP('SELECTF') MAPSET('STU090A')              
+            ERASE END-EXEC.                                           
+         EXEC CICS RETURN TRANSID('0902') COMMAREA(DFHCOMMAREA)       
+            END-EXEC.                                                 
+    *    EXIT.                   
+
+
+
+
+
+
+LAB41
+000100 IDENTIFICATION DIVISION.     
+000200 PROGRAM-ID. LAB41.           
+000300 DATA DIVISION.               
+000400 WORKING-STORAGE SECTION.     
+             COPY STU090A.          
+             COPY STU090B.          
+             COPY DFHAID.           
+       01 RCODE PIC S9(4) COMP.     
+       01 CERREC.                   
+          02 CERNUM PIC 9(4).       
+          02 CERDATE PIC X(10).     
+          02 SUBDE PIC X(20).       
+          02 NUMDE PIC 9(8).        
+          02 SUBCR PIC X(20).       
+          02 NUMCR PIC 9(8).        
+       02 FILLOR PIC X(8).                     
+       02 ADUITOR PIC X(8).                    
+    LINKAGE SECTION.                           
+    01 DFHCOMMAREA.                            
+        02 CNUM  PIC 9(4).                     
+    PROCEDURE DIVISION.                        
+        EVALUATE TRUE                          
+             WHEN EIBAID = DFHPF12             
+               MOVE LOW-VALUE TO CERTIFIO      
+               PERFORM SEND-CERTIFICATE        
+             WHEN EIBAID = DFHENTER            
+               PERFORM PROCESS-UPDATE          
+             WHEN EIBAID = DFHPF1              
+               EXEC CICS RETURN END-EXEC       
+             WHEN EIBAID = DFHPF3              
+               PERFORM RETURN-CERFUN           
+        END-EVALUATE.                          
+    SEND-CERTIFICATE.                          
+       EXEC CICS READ FILE('PINGZ090') INTO(CERREC) RIDFLD(CNUM)    
+                    RESP(RCODE) END-EXEC.                           
+       MOVE CERNUM TO CER-NUMO.                                     
+       MOVE CERDATE TO CE-DATEO.                                    
+       MOVE SUBDE TO SUB-DEO.                                       
+       MOVE NUMDE TO NUM-DEO.                                       
+       MOVE SUBCR TO SUB-CRO.                                       
+       MOVE NUMCR TO NUM-CRO.                                       
+       MOVE FILLOR TO FILLERO.                                      
+       MOVE ADUITOR TO ADUITERO.                                    
+       EXEC CICS SEND MAP('CERTIFI') MAPSET('STU090B') ERASE        
+           END-EXEC.                                                
+       EXEC CICS RETURN TRANSID('9041') END-EXEC.                   
+   PROCESS-UPDATE.                                                  
+       EXEC CICS RECEIVE MAP('CERTIFI') MAPSET('STU090B') END-EXEC. 
+       EXEC CICS READ FILE('PINGZ090') UPDATE INTO(CERREC)          
+         RIDFLD(CNUM)  END-EXEC.                                    
+       MOVE SUB-DEO TO SUBDE.                                       
+       MOVE NUM-DEO TO NUMDE.                                     
+       MOVE SUB-CRO TO SUBCR.                                     
+       MOVE NUM-CRO TO NUMCR.                                     
+       EXEC CICS REWRITE FROM(CERREC) FILE('PINGZ090')            
+            RESP(RCODE) END-EXEC                                  
+       IF RCODE EQUAL DFHRESP(NORMAL)                             
+         MOVE 'UPDATE SUCCESSFULLY!!!' TO CERMSGO                 
+       ELSE                                                       
+         MOVE 'UPDATE FAILED!!!' TO CERMSGO                       
+       END-IF.                                                    
+       EXEC CICS SEND MAP('CERTIFI') MAPSET('STU090B') END-EXEC   
+       EXEC CICS RETURN TRANSID('9041') END-EXEC.                 
+   RETURN-CERFUN.                                                 
+       MOVE 'UPDATE' TO CERFUNO                                   
+       EXEC CICS SEND MAP('CERTFUN') MAPSET('STU090B')            
+          ERASE END-EXEC.                                         
+       EXEC CICS RETURN TRANSID('0904') COMMAREA(DFHCOMMAREA)     
+          END-EXEC.                                               
+    *    EXIT.    
+
+
+
+
+
+
+LAB5  
+000100 IDENTIFICATION DIVISION.         
+000200 PROGRAM-ID. LAB5.                
+000300 DATA DIVISION.                   
+000400 WORKING-STORAGE SECTION.         
+             COPY STU090A.              
+             COPY STU090B.              
+             COPY DFHAID.               
+       01 RCODE PIC S9(4) COMP.         
+       01 CNUM PIC 9(4).                
+       01 CERREC.                       
+          02 CERNUM PIC 9(4).           
+          02 CERDATE PIC X(10).         
+          02 SUBDE PIC X(20).           
+          02 NUMDE PIC 9(8).            
+          02 SUBCR PIC X(20).  
+       02 NUMCR PIC 9(8).                        
+       02 FILLOR PIC X(8).                       
+       02 ADUITOR PIC X(8).                      
+    LINKAGE SECTION.                             
+    01 DFHCOMMAREA.                              
+        02 CNAME PIC X(8).                       
+        02 CRIGHT PIC X.                         
+    PROCEDURE DIVISION.                          
+        EVALUATE TRUE                            
+             WHEN EIBAID = DFHPF12               
+               MOVE LOW-VALUE TO CERFUNO         
+               PERFORM SEND-CERFUN               
+             WHEN EIBAID = DFHENTER              
+               PERFORM PROCESS-INQUIRE           
+             WHEN EIBAID = DFHPF1                
+               EXEC CICS RETURN END-EXEC         
+             WHEN EIBAID = DFHPF3                
+               PERFORM RETURN-FUN     
+        END-EVALUATE.                                                
+    SEND-CERFUN.                                                     
+        MOVE 'INQUIRE' TO CERFUNO.                                   
+        EXEC CICS SEND MAP('CERTFUN') MAPSET('STU090B') ERASE        
+            END-EXEC.                                                
+        EXEC CICS RETURN TRANSID('0905') END-EXEC.                   
+    PROCESS-INQUIRE.                                                 
+        EXEC CICS RECEIVE MAP('CERTFUN') MAPSET('STU090B') END-EXEC. 
+        MOVE CERNUMO TO CNUM.                                        
+        EXEC CICS READ FILE('PINGZ090') INTO(CERREC)                 
+          RIDFLD(CNUM) RESP(RCODE) END-EXEC.                         
+        IF RCODE EQUAL DFHRESP(NORMAL)                               
+          IF CRIGHT = 0                                              
+            MOVE CERNUM TO CER-NUMO                                  
+            MOVE CERDATE TO CE-DATEO                                 
+            MOVE SUBDE TO SUB-DEO                                    
+            MOVE NUMDE TO NUM-DEO                                    
+            MOVE SUBCR TO SUB-CRO                                    
+           MOVE NUMCR TO NUM-CRO                                    
+           MOVE FILLOR TO FILLERO                                   
+           EXEC CICS SEND MAP('CERTIFI') MAPSET('STU090B')          
+              ERASE END-EXEC                                        
+           EXEC CICS RETURN TRANSID('9051') COMMAREA(CNUM) END-EXEC 
+         ELSE IF CRIGHT = 1 AND CNAME = FILLOR                      
+           MOVE CERNUM TO CER-NUMO                                  
+           MOVE CERDATE TO CE-DATEO                                 
+           MOVE SUBDE TO SUB-DEO                                    
+           MOVE NUMDE TO NUM-DEO                                    
+           MOVE SUBCR TO SUB-CRO                                    
+           MOVE NUMCR TO NUM-CRO                                    
+           MOVE FILLOR TO FILLERO                                   
+           EXEC CICS SEND MAP('CERTIFI') MAPSET('STU090B')          
+              ERASE END-EXEC                                        
+           EXEC CICS RETURN TRANSID('9051') COMMAREA(CNUM) END-EXEC 
+         ELSE                                                       
+  *        MOVE 'NO RIGHT!!!' TO CERMSGO                            
+            MOVE CNUM TO CERMSGO                                     
+            EXEC CICS SEND MAP('CERTIFI') MAPSET('STU090B') END-EXEC 
+          END-IF                                                     
+        ELSE                                                         
+          MOVE 'INQUIRE FAILED!!!' TO CERMSGO                        
+          EXEC CICS SEND MAP('CERTIFI') MAPSET('STU090B') END-EXEC   
+        END-IF.                                                      
+    RETURN-FUN.                                                      
+        EXEC CICS SEND MAP('SELECTF') MAPSET('STU090A')              
+           ERASE END-EXEC.                                           
+        EXEC CICS RETURN TRANSID('0902') COMMAREA(DFHCOMMAREA)       
+           END-EXEC.                                                 
+   *    EXIT.                                                        
+
+
+
+
+
+LAB51
+000100 IDENTIFICATION DIVISION.   
+000200 PROGRAM-ID. LAB51.         
+000300 DATA DIVISION.             
+000400 WORKING-STORAGE SECTION.   
+             COPY STU090A.        
+             COPY STU090B.        
+             COPY DFHAID.         
+       01 RCODE PIC S9(4) COMP.   
+       01 CERREC.                 
+          02 CERNUM PIC 9(4).     
+          02 CERDATE PIC X(10).   
+          02 SUBDE PIC X(20).     
+          02 NUMDE PIC 9(8).      
+          02 SUBCR PIC X(20).     
+          02 NUMCR PIC 9(8).      
+        02 FILLOR PIC X(8).                                           
+        02 ADUITOR PIC X(8).                                          
+     LINKAGE SECTION.                                                 
+     01 DFHCOMMAREA.                                                  
+         02 CNUM  PIC 9(4).                                           
+     PROCEDURE DIVISION.                                              
+         EVALUATE TRUE                                                
+              WHEN EIBAID = DFHPF12                                   
+                MOVE LOW-VALUE TO CERTIFIO                            
+                PERFORM SEND-CERTIFICATE                              
+              WHEN EIBAID = DFHPF1                                    
+                EXEC CICS RETURN END-EXEC                             
+              WHEN EIBAID = DFHPF3                                    
+                PERFORM RETURN-CERFUN                                 
+         END-EVALUATE.                                                
+     SEND-CERTIFICATE.                                                
+         EXEC CICS READ FILE('PINGZ090') INTO(CERREC) RIDFLD(CNUM)    
+                      RESP(RCODE) END-EXEC.                           
+        MOVE CERNUM TO CER-NUMO.                                    
+        MOVE CERDATE TO CE-DATEO.                                   
+        MOVE SUBDE TO SUB-DEO.                                      
+        MOVE NUMDE TO NUM-DEO.                                      
+        MOVE SUBCR TO SUB-CRO.                                      
+        MOVE NUMCR TO NUM-CRO.                                      
+        MOVE FILLOR TO FILLERO.                                     
+        MOVE ADUITOR TO ADUITERO.                                   
+        EXEC CICS SEND MAP('CERTIFI') MAPSET('STU090B') ERASE       
+            END-EXEC.                                               
+        EXEC CICS RETURN TRANSID('9051') END-EXEC.                  
+    RETURN-CERFUN.                                                  
+        MOVE 'INQUIRE' TO CERFUNO                                   
+        EXEC CICS SEND MAP('CERTFUN') MAPSET('STU090B')             
+           ERASE END-EXEC.                                          
+        EXEC CICS RETURN TRANSID('0905') COMMAREA(DFHCOMMAREA)      
+           END-EXEC.                                                
+   *    EXIT.                                                       
+
+LAB6
+ 000100 IDENTIFICATION DIVISION.                
+ 000200 PROGRAM-ID. LAB6.                       
+ 000300 DATA DIVISION.                          
+ 000400 WORKING-STORAGE SECTION.                
+              COPY STU090A.                     
+              COPY STU090B.                     
+              COPY DFHAID.                      
+        01 RCODE PIC S9(4) COMP.                
+        01 CNUM PIC 9(4).                       
+        01 CERREC.                              
+           02 CERNUM PIC 9(4).                  
+           02 CERDATE PIC X(10).                
+           02 SUBDE PIC X(20).                  
+           02 NUMDE PIC 9(8).                   
+           02 SUBCR PIC X(20).                  
+       02 NUMCR PIC 9(8).                                            
+       02 FILLOR PIC X(8).                                           
+       02 ADUITOR PIC X(8).                                          
+    LINKAGE SECTION.                                                 
+    01 DFHCOMMAREA.                                                  
+        02 CNAME PIC X(8).                                           
+        02 CRIGHT PIC X.                                             
+    PROCEDURE DIVISION.                                              
+        EVALUATE TRUE                                                
+             WHEN EIBAID = DFHPF12                                   
+               MOVE LOW-VALUE TO CERFUNO                             
+               PERFORM SEND-CERFUN                                   
+             WHEN EIBAID = DFHENTER                                  
+               PERFORM PROCESS-DELETE                                
+             WHEN EIBAID = DFHPF1                                    
+               EXEC CICS RETURN END-EXEC                             
+             WHEN EIBAID = DFHPF3                                    
+               PERFORM RETURN-FUN                                    
+        END-EVALUATE.                                                
+    SEND-CERFUN.                                                     
+        MOVE 'UPDATE'    TO CERFUNO.                                 
+        EXEC CICS SEND MAP('CERTFUN') MAPSET('STU090B') ERASE        
+            END-EXEC.                                                
+        EXEC CICS RETURN TRANSID('0906') END-EXEC.                   
+    PROCESS-DELETE.                                                  
+        EXEC CICS RECEIVE MAP('CERTFUN') MAPSET('STU090B') END-EXEC. 
+        MOVE CERNUMO TO CNUM.                                        
+        EXEC CICS READ FILE('PINGZ090') INTO(CERREC)                 
+          RIDFLD(CNUM) RESP(RCODE) END-EXEC.                         
+        IF RCODE EQUAL DFHRESP(NORMAL)                               
+          IF CRIGHT = 0                                              
+            EXEC CICS DELETE FILE('PINGZ090') RIDFLD(CERNUMO)        
+              RESP(RCODE) END-EXEC                                   
+            IF RCODE EQUAL DFHRESP(NORMAL)                           
+              MOVE 'DELETE SUCCESSFULLY!!!' TO CERMSGO               
+            ELSE                                                     
+              MOVE 'DELETE FAILED!!!' TO CERMSGO                     
+            END-IF                                                   
+            EXEC CICS SEND MAP('CERTIFI') MAPSET('STU090B') END-EXEC 
+            EXEC CICS RETURN TRANSID('0906') COMMAREA(CNUM) END-EXEC 
+          ELSE IF CRIGHT = 1 AND CNAME = FILLOR                      
+            EXEC CICS DELETE FILE('PINGZ090') RIDFLD(CERNUMO)        
+              RESP(RCODE) END-EXEC                                   
+            IF RCODE EQUAL DFHRESP(NORMAL)                           
+              MOVE 'DELETE SUCCESSFULLY!!!' TO CERMSGO               
+            ELSE                                                     
+              MOVE 'DELETE FAILED!!!' TO CERMSGO                     
+            END-IF                                                   
+            EXEC CICS SEND MAP('CERTIFI') MAPSET('STU090B') END-EXEC 
+            EXEC CICS RETURN TRANSID('0906') COMMAREA(CNUM) END-EXEC 
+          ELSE                                                       
+            MOVE 'NO RIGHT!!!' TO CERMSGO                            
+   *        MOVE CNUM TO CERMSGO                                     
+            EXEC CICS SEND MAP('CERTIFI') MAPSET('STU090B') END-EXEC 
+            EXEC CICS RETURN TRANSID('0906') COMMAREA(CNUM) END-EXEC 
+          END-IF                                                     
+        ELSE                                                         
+          MOVE 'NUMBER IS WRONG!!' TO CERMSGO                        
+          EXEC CICS SEND MAP('CERTIFI') MAPSET('STU090B') END-EXEC   
+          EXEC CICS RETURN TRANSID('0906') COMMAREA(CNUM) END-EXEC   
+        END-IF.                                                      
+    RETURN-FUN.                                                      
+        EXEC CICS SEND MAP('SELECTF') MAPSET('STU090A')              
+           ERASE END-EXEC.                                           
+        EXEC CICS RETURN TRANSID('0902') COMMAREA(DFHCOMMAREA)       
+          END-EXEC.                                                  
+   *    EXIT.    
+
+                                                    
+
+
+LAB7
+
+000100 IDENTIFICATION DIVISION.                                         
+000200 PROGRAM-ID. LAB7.                                                
+000300 DATA DIVISION.                                                   
+000400 WORKING-STORAGE SECTION.                                         
+             COPY STU090A.                                              
+             COPY STU090B.                                              
+             COPY DFHAID.                                               
+       01 RCODE PIC S9(4) COMP.                                         
+       01 CERREC.                                               
+          02 CERNUM PIC 9(4).                                           
+          02 CERDATE PIC X(10).                                         
+          02 SUBDE PIC X(20).                                           
+          02 NUMDE PIC 9(8).                                            
+          02 SUBCR PIC X(20).                                           
+          02 NUMCR PIC 9(8).                                            
+          02 FILLOR PIC X(8).                                           
+          02 ADUITOR PIC X(8).                                          
+       LINKAGE SECTION.                                                
+       01 DFHCOMMAREA.                                                 
+           02 CNAME PIC X(8).                                          
+           02 CRIGHT PIC X.                                            
+           02 CNUM PIC 9(4).                                           
+       PROCEDURE DIVISION.                                             
+           EVALUATE TRUE                                               
+                WHEN EIBAID = DFHPF12                                  
+                  MOVE LOW-VALUE TO CERFUNO                            
+                  PERFORM SEND-CERFUN                                  
+                WHEN EIBAID = DFHENTER                                 
+                  PERFORM PROCESS-INQUIRE                              
+                WHEN EIBAID = DFHPF1                                   
+                  EXEC CICS RETURN END-EXEC                            
+                WHEN EIBAID = DFHPF3                                   
+                  PERFORM RETURN-FUN                                   
+           END-EVALUATE.                                               
+       SEND-CERFUN.                                                                    MOVE LOW-VALUE   TO CERTFUNO.                                
+          MOVE 'UPDATE'    TO CERFUNO.                                 
+          EXEC CICS SEND MAP('CERTFUN') MAPSET('STU090B') ERASE        
+              END-EXEC.                                                
+          EXEC CICS RETURN TRANSID('0907') COMMAREA(DFHCOMMAREA)       
+            END-EXEC.                                                  
+      PROCESS-INQUIRE.                                                 
+          EXEC CICS RECEIVE MAP('CERTFUN') MAPSET('STU090B') END-EXEC. 
+          MOVE CERNUMO TO CNUM.                                        
+          EXEC CICS READ FILE('PINGZ090') INTO(CERREC)                 
+            RIDFLD(CNUM) RESP(RCODE) END-EXEC.                         
+          IF RCODE EQUAL DFHRESP(NORMAL)                               
+     *      IF CRIGHT = 0                                              
+              MOVE LOW-VALUE TO CERTIFIO                               
+              MOVE CERNUM TO CER-NUMO                                  
+              MOVE CERDATE TO CE-DATEO                                 
+              MOVE SUBDE TO SUB-DEO                                    
+              MOVE NUMDE TO NUM-DEO                                                        MOVE NUMCR TO NUM-CRO                                    
+              MOVE FILLOR TO FILLERO                                   
+              EXEC CICS SEND MAP('CERTIFI') MAPSET('STU090B')          
+                 ERASE END-EXEC                                        
+              EXEC CICS RETURN TRANSID('9071') COMMAREA(DFHCOMMAREA)   
+                 END-EXEC                                              
+          ELSE                                                         
+            MOVE 'INQUIRE FAILED!!!' TO CERFMSGO                       
+            EXEC CICS SEND MAP('CERTFUN') MAPSET('STU090B') END-EXEC   
+              EXEC CICS RETURN TRANSID('0907') COMMAREA(DFHCOMMAREA)   
+                END-EXEC                                               
+          END-IF.                                                      
+      RETURN-FUN.                                                      
+          MOVE LOW-VALUE TO SELECTFO.                                  
+          EXEC CICS SEND MAP('SELECTF') MAPSET('STU090A')              
+             ERASE END-EXEC.                                           
+          EXEC CICS RETURN TRANSID('0902') COMMAREA(DFHCOMMAREA)       
+             END-EXEC.                                                 
+   
+
+
+
+LAB8
+
+000100 IDENTIFICATION DIVISION.            
+000200 PROGRAM-ID. LAB8.                   
+000300 DATA DIVISION.                      
+000400 WORKING-STORAGE SECTION.            
+             COPY STU090A.                 
+             COPY STU090D.                 
+             COPY DFHAID.                  
+       01 TSTAMP PIC S9(15) COMP-3.        
+       01 RCODE PIC S9(4) COMP.            
+       01 RETURNS PIC 9(12).               
+       01 SDATE.                           
+          02 SYEA PIC 9(4).                
+          02 FILLER PIC X.                 
+          02 SMON PIC 9(2).                
+          02 FILLER PIC X.                 
+        02 SDAY PIC 9(2).                 
+     01 EDATE.                            
+        02 EYEA PIC 9(4).                 
+        02 FILLER PIC X.                  
+        02 EMON PIC 9(2).                 
+        02 FILLER PIC X.                  
+        02 EDAY PIC 9(2).                 
+     01 CERREC.                           
+        02 CERNUM PIC 9(4).               
+        02 FDATE.                         
+           03 FMON PIC 9(2).              
+           03 FILLER PIC X.               
+           03 FDAY PIC 9(2).              
+           03 FILLER PIC X.               
+           03 FYEA PIC 9(4).              
+        02 SUBDE PIC X(20).               
+        02 NUMDE PIC 9(8).                
+        02 SUBCR PIC X(20).               
+      02 NUMCR PIC 9(8).                                       
+      02 FILLOR PIC X(8).                                      
+      02 ADUITOR PIC X(8).                                     
+   LINKAGE SECTION.                                            
+   01 DFHCOMMAREA.                                             
+       02 CNAME PIC X(8).                                      
+       02 CRIGHT PIC X.                                        
+   PROCEDURE DIVISION.                                         
+       EVALUATE TRUE                                           
+            WHEN EIBAID = DFHPF12                              
+              MOVE LOW-VALUE TO SUMDATAO                       
+              PERFORM SEND-SUMDATA                             
+            WHEN EIBAID = DFHENTER                             
+              PERFORM PROCESS-COMPUTE                          
+            WHEN EIBAID = DFHPF1                               
+              EXEC CICS RETURN END-EXEC                        
+            WHEN EIBAID = DFHPF3                               
+              PERFORM RETURN-FUN                               
+       END-EVALUATE.                                               
+   SEND-SUMDATA.                                                   
+       MOVE LOW-VALUE TO SUMDATAO.                                 
+       EXEC CICS SEND MAP('SUMDATA') MAPSET('STU090D') ERASE       
+           END-EXEC.                                               
+       EXEC CICS RETURN TRANSID('0908') COMMAREA(DFHCOMMAREA)      
+         END-EXEC.                                                 
+   PROCESS-COMPUTE.                                                
+       EXEC CICS RECEIVE MAP('SUMDATA') MAPSET('STU090D') END-EXEC.
+       MOVE SDATEI TO SDATE.                                       
+       MOVE EDATEI TO EDATE.                                       
+       MOVE 0 TO RETURNS.                                          
+       EXEC CICS STARTBR FILE('PINGZ090') RIDFLD(CERNUM)           
+         RESP(RCODE) END-EXEC                                      
+       IF RCODE EQUAL DFHRESP(NORMAL)                              
+         PERFORM UNTIL RCODE EQUAL DFHRESP(ENDFILE)                
+           EXEC CICS READNEXT FILE('PINGZ090') INTO(CERREC)        
+             RIDFLD(CERNUM) RESP(RCODE) END-EXEC                   
+ *        IF FYEA >= SYEA AND FYEA <= EYEA AND FMON >= SMON      
+ *          IF FMON <= EMON AND FDAY >= SDAY AND FDAY <= EDAY    
+ *            ADD NUMDE TO RETURNS                               
+ *          END-IF                                               
+ *        END-IF                                                 
+          IF FYEA = SYEA AND FYEA = EYEA AND FMON = SMON AND     
+             FMON = EMON AND FDAY >= SDAY AND FDAY <= EDAY       
+              ADD NUMDE TO RETURNS                               
+          END-IF                                                 
+          IF FYEA = SYEA AND FYEA = EYEA AND FMON > SMON AND     
+             FMON = EMON AND FDAY <= EDAY                        
+              ADD NUMDE TO RETURNS                               
+          END-IF                                                 
+          IF FYEA = SYEA AND FYEA = EYEA AND FMON = SMON AND     
+             FMON < EMON AND FDAY >= SDAY                        
+             ADD NUMDE TO RETURNS                                
+          END-IF                                                 
+          IF FYEA = SYEA AND FYEA = EYEA AND FMON > SMON AND     
+              FMON < EMON                                          
+               ADD NUMDE TO RETURNS                                
+           END-IF                                                  
+           IF FYEA > SYEA AND FYEA = EYEA AND FMON <= EMON         
+               ADD NUMDE TO RETURNS                                
+           END-IF                                                  
+           IF FYEA = SYEA AND FYEA < EYEA AND FMON >= SMON         
+               ADD NUMDE TO RETURNS                                
+           END-IF                                                  
+           IF FYEA > SYEA AND FYEA < EYEA                          
+               ADD NUMDE TO RETURNS                                
+           END-IF                                                  
+         END-PERFORM                                               
+       EXEC CICS ENDBR FILE('PINGZ090') END-EXEC                   
+       MOVE RETURNS TO RETURNSO                                    
+       END-IF                                                      
+       EXEC CICS SEND MAP('SUMDATA') MAPSET('STU090D') END-EXEC.   
+       EXEC CICS RETURN TRANSID('0908') COMMAREA(DFHCOMMAREA)      
+          END-EXEC.                                                 
+    RETURN-FUN.                                                     
+        MOVE LOW-VALUE TO SELECTFO.                                 
+        EXEC CICS SEND MAP('SELECTF') MAPSET('STU090A')             
+           ERASE END-EXEC.                                          
+        EXEC CICS RETURN TRANSID('0902') COMMAREA(DFHCOMMAREA)      
+           END-EXEC.                                                
+
+
+
+LAB9
+
+000100 IDENTIFICATION DIVISION.                    
+000200 PROGRAM-ID. LAB9.                           
+000300 DATA DIVISION.                              
+000400 WORKING-STORAGE SECTION.                    
+             COPY STU090A.                         
+             COPY STU090D.                         
+             COPY DFHAID.                          
+       01 TSTAMP PIC S9(15) COMP-3.                
+       01 RCODE PIC S9(4) COMP.                    
+       01 RETURNS PIC 9(12).                       
+       01 EDATE.                                   
+          02 EMON PIC 9(2).                        
+          02 FILLER PIC X.                         
+          02 EDAY PIC 9(2).                        
+          02 FILLER PIC X.                         
+       02 EYEA PIC 9(4).             
+    01 CERREC.                       
+       02 CERNUM PIC 9(4).           
+       02 FDATE.                     
+          03 FMON PIC 9(2).          
+          03 FILLER PIC X.           
+          03 FDAY PIC 9(2).          
+          03 FILLER PIC X.           
+          03 FYEA PIC 9(4).          
+       02 SUBDE PIC X(20).           
+       02 NUMDE PIC 9(8).            
+       02 SUBCR PIC X(20).           
+       02 NUMCR PIC 9(8).            
+       02 FILLOR PIC X(8).           
+       02 ADUITOR PIC X(8).          
+    LINKAGE SECTION.                 
+    01 DFHCOMMAREA.                  
+        02 CNAME PIC X(8).  
+         02 CRIGHT PIC X.                                             
+     PROCEDURE DIVISION.                                              
+         EVALUATE TRUE                                                
+              WHEN EIBAID = DFHPF12                                   
+                MOVE LOW-VALUE TO MONEYSO                             
+                PERFORM SEND-MONEYS                                   
+              WHEN EIBAID = DFHENTER                                  
+                PERFORM PROCESS-COMPUTE                               
+              WHEN EIBAID = DFHPF1                                    
+                EXEC CICS RETURN END-EXEC                             
+              WHEN EIBAID = DFHPF3                                    
+                PERFORM RETURN-FUN                                    
+         END-EVALUATE.                                                
+     SEND-MONEYS.                                                     
+         MOVE LOW-VALUE TO MONEYSO.                                   
+         EXEC CICS SEND MAP('MONEYS') MAPSET('STU090D') ERASE         
+             END-EXEC.                                                
+         EXEC CICS RETURN TRANSID('0909') COMMAREA(DFHCOMMAREA) 
+         END-EXEC.                                                  
+   PROCESS-COMPUTE.                                                 
+  *    EXEC CICS RECEIVE MAP('MONEYS') MAPSET('STU090D') END-EXEC.  
+       EXEC CICS ASKTIME ABSTIME(TSTAMP) END-EXEC.                  
+       EXEC CICS FORMATTIME ABSTIME(TSTAMP)                         
+           DATESEP MMDDYYYY(EDATE) END-EXEC.                        
+       MOVE 0 TO RETURNS.                                           
+       EXEC CICS STARTBR FILE('PINGZ090') RIDFLD(CERNUM)            
+         RESP(RCODE) END-EXEC                                       
+       IF RCODE EQUAL DFHRESP(NORMAL)                               
+         PERFORM UNTIL RCODE EQUAL DFHRESP(ENDFILE)                 
+           EXEC CICS READNEXT FILE('PINGZ090') INTO(CERREC)         
+             RIDFLD(CERNUM) RESP(RCODE) END-EXEC                    
+           IF FYEA = EYEA AND FMON = EMON AND FDAY <= EDAY          
+             IF SUBDE EQUAL 'CASH' OR 'YINHANGCUNKUAN'              
+               ADD NUMDE TO RETURNS                                 
+             END-IF                                                 
+             IF SUBCR EQUAL 'CASH' OR 'YINHANGCUNKUAN'        
+               SUBTRACT NUMCR FROM RETURNS                       
+             END-IF                                              
+           END-IF                                                
+         END-PERFORM                                             
+       END-IF                                                    
+       EXEC CICS ENDBR FILE('PINGZ090') END-EXEC                 
+       MOVE LOW-VALUE TO MONEYSO                                 
+       MOVE RETURNS TO SUMMONO                                   
+       EXEC CICS SEND MAP('MONEYS') MAPSET('STU090D') END-EXEC.  
+       EXEC CICS RETURN TRANSID('0909') COMMAREA(DFHCOMMAREA)    
+         END-EXEC.                                               
+   RETURN-FUN.                                                   
+       MOVE LOW-VALUE TO SELECTFO.                               
+       EXEC CICS SEND MAP('SELECTF') MAPSET('STU090A')           
+          ERASE END-EXEC.                                        
+       EXEC CICS RETURN TRANSID('0902') COMMAREA(DFHCOMMAREA)    
+          END-EXEC.                                              
+      
+               

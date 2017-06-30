@@ -1,0 +1,293 @@
+MAPSETA
+STU090A DFHMSD TYPE=MAP,MODE=INOUT,CTRL=(FREEKB),                      X
+               LANG=COBOL,TIOAPFX=YES,MAPATTS=(COLOR,HILIGHT)           
+LOGINPZ DFHMDI SIZE=(24,80),LINE=1,COLUMN=1                             
+*TITLE                                                                  
+        DFHMDF POS=(01,20),LENGTH=29,COLOR=BLUE,                       X
+               INITIAL='CERTIFICATE MANAGEMENT SYSTEM'                  
+        DFHMDF POS=(02,01),LENGTH=78,COLOR=BLUE,HILIGHT=UNDERLINE       
+        DFHMDF POS=(02,80),LENGTH=01                                    
+        DFHMDF POS=(04,30),LENGTH=10,COLOR=BLUE,INITIAL='USER LOGIN'    
+        DFHMDF POS=(05,01),LENGTH=30,COLOR=GREEN,                      X
+               INITIAL='PLEASE TYPE NAME AND PASSWORD.'                 
+*DETAIL                                                                 
+        DFHMDF POS=(08,03),LENGTH=09,ATTRB=ASKIP,COLOR=BLUE,           X
+               INITIAL='USER NAME:'                                     
+UNAME   DFHMDF POS=(08,13),LENGTH=08,ATTRB=(UNPROT,IC),                X
+               HILIGHT=UNDERLINE                                        
+        DFHMDF POS=(08,22),LENGTH=01                                    
+        DFHMDF POS=(08,25),LENGTH=18,COLOR=GREEN,                      X
+               INITIAL='*8 BITS CHARACTER'                              
+        DFHMDF POS=(09,03),LENGTH=09,ATTRB=ASKIP,COLOR=BLUE,           X
+               INITIAL='PASSWORD:'                                      
+UPSW    DFHMDF POS=(09,13),LENGTH=06,ATTRB=(DRK,UNPROT),               X
+               HILIGHT=UNDERLINE                                        
+        DFHMDF POS=(09,20),LENGTH=01                                    
+        DFHMDF POS=(09,25),LENGTH=18,COLOR=GREEN,                      X
+               INITIAL='*6 BITS CHARACTER'                              
+*MESSAGE AREA                                                           
+LOGMSG  DFHMDF POS=(21,01),LENGTH=80,COLOR=NEUTRAL,                    X
+               INITIAL='WELCOME TO USE THE MANMGEMENT SYSTEM!'          
+*FUNCTION KEY                                                           
+        DFHMDF POS=(24,01),LENGTH=21,COLOR=BLUE,                       X
+               INITIAL=' F1=EXIT  F12=CANCEL'                           
+SELECTF DFHMDI SIZE=(24,80),LINE=1,COLUMN=1                             
+*PANEL TITLE                                                            
+        DFHMDF POS=(01,20),LENGTH=29,COLOR=BLUE,                       X
+               INITIAL='CERTIFICATE MANAGEMENT SYSTEM'                  
+        DFHMDF POS=(02,01),LENGTH=78,COLOR=BLUE,HILIGHT=UNDERLINE       
+        DFHMDF POS=(02,80),LENGTH=01                                    
+*INSTRUCTION                                                            
+        DFHMDF POS=(05,30),LENGTH=13,COLOR=BLUE,                       X
+               INITIAL='FUNCTION MENU'                                  
+        DFHMDF POS=(06,01),LENGTH=39,COLOR=GREEN,                      X
+               INITIAL='TYPE AN FUNCTION CODE,THEN PRESS ENTER.'        
+*FUNCTION CODE                                                          
+FUNCODE DFHMDF POS=(08,10),LENGTH=01,ATTRB=(UNPROT,NUM,IC),            X
+               HILIGHT=UNDERLINE,COLOR=TURQUOISE                        
+*DETAIL                                                                 
+        DFHMDF POS=(08,12),LENGTH=18,COLOR=BLUE,                       X
+               INITIAL='0.ADD CERTIFICATE'                              
+        DFHMDF POS=(09,13),LENGTH=22,COLOR=BLUE,                       X
+               INITIAL='1.CHANGE CERTIFICATION'                         
+        DFHMDF POS=(10,13),LENGTH=23,COLOR=BLUE,                       X
+               INITIAL='2.INQUIRE CERTIFICATION'                        
+        DFHMDF POS=(11,13),LENGTH=22,COLOR=BLUE,                       X
+               INITIAL='3.DELETE CERTIFICATION'                         
+        DFHMDF POS=(12,13),LENGTH=21,COLOR=BLUE,                       X
+               INITIAL='4.SUM DATA BY DATE'                             
+        DFHMDF POS=(13,13),LENGTH=30,COLOR=BLUE,                       X
+               INITIAL='5.PRESENT MOUTH USED MONEY'                     
+        DFHMDF POS=(14,13),LENGTH=21,COLOR=BLUE,                       X
+               INITIAL='6.AUDIT CERTIFICATION'                          
+        DFHMDF POS=(15,13),LENGTH=10,COLOR=BLUE,                       X
+               INITIAL='7.ADD USER'                                     
+        DFHMDF POS=(16,13),LENGTH=25,COLOR=BLUE,                       X
+               INITIAL='8.UPDATE USER INFORMATION'                      
+        DFHMDF POS=(17,13),LENGTH=13,COLOR=BLUE,                       X
+               INITIAL='9.DELECT USER'                                  
+*MESSAGE AREA                                                           
+FUNMSG  DFHMDF POS=(22,01),LENGTH=37,COLOR=NEUTRAL                      
+*FUNCTION KEY FIELD                                                     
+        DFHMDF POS=(24,01),LENGTH=31,COLOR=BLUE,                       X
+               INITIAL=' F1=EXIT  F3=RETURN  F12=CANCEL'                
+        DFHMSD TYPE=FINAL                                               
+               END                                                      
+
+
+
+
+
+MAPSETB
+STU090B DFHMSD TYPE=MAP,MODE=INOUT,CTRL=(FREEKB),                      X
+               LANG=COBOL,TIOAPFX=YES,MAPATTS=(COLOR,HILIGHT)           
+CERTIFI DFHMDI SIZE=(24,80),LINE=1,COLUMN=1                             
+*INSTRUCTION                                                            
+        DFHMDF POS=(03,30),LENGTH=19,COLOR=BLUE,                       X
+               INITIAL='ACCOUNTING VOUCHER'                             
+*INFORMATION TEXT                                                       
+        DFHMDF POS=(06,01),LENGTH=14,COLOR=BLUE,                       X
+               INITIAL='SERIAL NUMBER:'                                 
+CER-NUM DFHMDF POS=(06,16),LENGTH=04,COLOR=TURQUOISE                    
+        DFHMDF POS=(06,21),LENGTH=01                                    
+        DFHMDF POS=(06,58),LENGTH=05,COLOR=BLUE,                       X
+               INITIAL='DATE:'                                          
+CE-DATE DFHMDF POS=(06,65),LENGTH=10,COLOR=TURQUOISE                    
+        DFHMDF POS=(10,06),LENGTH=07,COLOR=BLUE,                       X
+               INITIAL='SUBJECT'                                        
+        DFHMDF POS=(10,23),LENGTH=05,COLOR=BLUE,                       X
+               INITIAL='DEBIT'                                          
+        DFHMDF POS=(10,31),LENGTH=06,COLOR=BLUE,                       X
+               INITIAL='CREDIT'                                         
+SUB-DE  DFHMDF POS=(11,01),LENGTH=20,ATTRB=(UNPROT),                   X
+               HILIGHT=UNDERLINE,COLOR=TURQUOISE                        
+NUM-DE  DFHMDF POS=(11,22),LENGTH=08,ATTRB=(UNPROT,NUM),               X
+               HILIGHT=UNDERLINE,COLOR=TURQUOISE                        
+        DFHMDF POS=(11,31),LENGTH=01                                    
+SUB-CR  DFHMDF POS=(12,01),LENGTH=20,HILIGHT=UNDERLINE,COLOR=TURQUOISE  
+        DFHMDF POS=(12,22),LENGTH=01                                    
+NUM-CR  DFHMDF POS=(12,31),LENGTH=08,ATTRB=(UNPROT,NUM),               X
+               HILIGHT=UNDERLINE,COLOR=TURQUOISE                        
+        DFHMDF POS=(12,40),LENGTH=01                                    
+        DFHMDF POS=(18,45),LENGTH=05,COLOR=BLUE,                       X
+               INITIAL='FILL'                                           
+FILLER  DFHMDF POS=(18,51),LENGTH=08,COLOR=TURQUOISE                    
+        DFHMDF POS=(18,65),LENGTH=06,COLOR=BLUE,                       X
+               INITIAL='ADUIT'                                          
+ADUITER DFHMDF POS=(18,72),LENGTH=08,COLOR=TURQUOISE                    
+*MESSAGE AREA                                                           
+CERMSG  DFHMDF POS=(21,01),LENGTH=70,COLOR=NEUTRAL                      
+*FUNCTION KEY FIELD                                                     
+        DFHMDF POS=(24,01),LENGTH=29,COLOR=BLUE,                       X
+               INITIAL='  F1=EXIT  F3=RETURN '                          
+CERTFUN DFHMDI SIZE=(24,80),LINE=1,COLUMN=1                             
+*PANEL TITLE                                                            
+        DFHMDF POS=(01,20),LENGTH=38,COLOR=BLUE,                       X
+               INITIAL='CERTIFICATE MANAGEMENT SYSTEM'                  
+*PANEL FUNCTION                                                         
+CERFUN  DFHMDF POS=(01,70),LENGTH=6,COLOR=BLUE                          
+*PANEL AREA SEPARATOR                                                   
+        DFHMDF POS=(02,01),LENGTH=78,COLOR=BLUE,HILIGHT=UNDERLINE       
+        DFHMDF POS=(02,80),LENGTH=01                                    
+*DISCRIPTIVE TEXT                                                       
+        DFHMDF POS=(04,01),LENGTH=70,ATTRB=ASKIP,COLOR=NEUTRAL,        X
+               INITIAL='PLEASE TYPEIN THE NUMBER OF CERTIFICATE,4BITES' 
+        DFHMDF POS=(10,05),LENGTH=20,ATTRB=ASKIP,COLOR=NEUTRAL,        X
+               INITIAL='CERTIFICATE NUMBER:'                            
+CERNUM  DFHMDF POS=(10,26),LENGTH=04,ATTRB=(UNPROT,NUM,IC),            X
+               HILIGHT=UNDERLINE                                        
+        DFHMDF POS=(10,31),LENGTH=01,ATTRB=PROT                         
+*MESSAGE AREA                                                           
+CERFMSG DFHMDF POS=(21,01),LENGTH=70,COLOR=NEUTRAL                      
+*FUNCTION KEY FIELD                                                     
+        DFHMDF POS=(24,01),LENGTH=31,COLOR=BLUE,                       X
+               INITIAL=' F1=EXIT  F3=RETURN  F12=CANCEL'                
+        DFHMSD TYPE=FINAL                                               
+               END                                                      
+
+
+
+MAPSETC
+STU090C DFHMSD TYPE=MAP,MODE=INOUT,CTRL=(FREEKB),                      X
+               LANG=COBOL,TIOAPFX=YES,MAPATTS=(COLOR,HILIGHT)           
+USERINF DFHMDI SIZE=(24,80),LINE=1,COLUMN=1                             
+*INSTRUCTION                                                            
+        DFHMDF POS=(03,30),LENGTH=19,COLOR=BLUE,                       X
+               INITIAL='USER INFORMATION'                               
+*INFORMATION TEXT                                                       
+        DFHMDF POS=(06,01),LENGTH=41,COLOR=GREEN,                      X
+               INITIAL='PLEASE TYPE IN THE INFORMATION OF USERS:'       
+        DFHMDF POS=(08,05),LENGTH=09,COLOR=BLUE,                       X
+               INITIAL='USER NAME:'                                     
+USER-NA DFHMDF POS=(08,16),LENGTH=08,COLOR=TURQUOISE,HILIGHT=UNDERLINE  
+        DFHMDF POS=(08,25),LENGTH=01                                    
+        DFHMDF POS=(09,05),LENGTH=09,COLOR=BLUE,                       X
+               INITIAL='PASSWORD:'                                      
+USER-PS DFHMDF POS=(09,15),LENGTH=06,COLOR=TURQUOISE,ATTRB=NUM,        X
+               HILIGHT=UNDERLINE                                        
+        DFHMDF POS=(09,22),LENGTH=01                                    
+        DFHMDF POS=(10,05),LENGTH=04,COLOR=BLUE,                       X
+               INITIAL='AGE:'                                           
+USER-AG DFHMDF POS=(10,10),LENGTH=03,COLOR=TURQUOISE,ATTRB=NUM,        X
+               HILIGHT=UNDERLINE                                        
+        DFHMDF POS=(10,14),LENGTH=01                                    
+        DFHMDF POS=(11,05),LENGTH=06,COLOR=BLUE,                       X
+               INITIAL='RIGHT:'                                         
+USER-RI DFHMDF POS=(11,12),LENGTH=1,COLOR=TURQUOISE,HILIGHT=UNDERLINE   
+        DFHMDF POS=(11,23),LENGTH=01                                    
+        DFHMDF POS=(11,25),LENGTH=25,INITIAL='1:ACCOUNTANT 2:TREASURER' 
+*MESSAGE AREA                                                           
+USERMSG DFHMDF POS=(21,01),LENGTH=70,COLOR=NEUTRAL                      
+*FUNCTION KEY FIELD                                                     
+        DFHMDF POS=(24,01),LENGTH=35,COLOR=BLUE,                       X
+               INITIAL=' F1=EXIT  F3=RETURN  F12=CANCEL'                
+USERFUN DFHMDI SIZE=(24,80),LINE=1,COLUMN=1                             
+*PANEL TITLE                                                            
+        DFHMDF POS=(01,20),LENGTH=43,COLOR=BLUE,                       X
+               INITIAL='CERTIFICATE MANAGEMENT SYSTEM/USER'             
+*PANEL FUNCTION                                                         
+USER-FU DFHMDF POS=(01,70),LENGTH=6,COLOR=BLUE                          
+*PANEL AREA SEPARATOR                                                   
+        DFHMDF POS=(02,01),LENGTH=78,COLOR=BLUE,HILIGHT=UNDERLINE       
+        DFHMDF POS=(02,80),LENGTH=01                                    
+*DISCRIPTIVE TEXT                                                       
+        DFHMDF POS=(04,01),LENGTH=70,ATTRB=ASKIP,COLOR=NEUTRAL,        X
+               INITIAL='PLEASE TYPE IN THE USER NAME,8 BITES'           
+        DFHMDF POS=(10,05),LENGTH=05,ATTRB=ASKIP,COLOR=NEUTRAL,        X
+               INITIAL='NAME:'                                          
+USE-NAM DFHMDF POS=(10,11),LENGTH=08,ATTRB=(UNPROT,IC),                X
+               HILIGHT=UNDERLINE                                        
+        DFHMDF POS=(10,20),LENGTH=01,ATTRB=PROT                         
+*MESSAGE AREA                                                           
+USEFMSG DFHMDF POS=(21,01),LENGTH=70,COLOR=NEUTRAL                      
+*FUNCTION KEY FIELD                                                     
+        DFHMDF POS=(24,01),LENGTH=31,COLOR=BLUE,                       X
+               INITIAL=' F1=EXIT  F3=RETURN  F12=CANCEL'                
+        DFHMSD TYPE=FINAL                                               
+               END                                                      
+
+
+
+MAPSETD
+STU090D DFHMSD TYPE=MAP,MODE=INOUT,CTRL=(FREEKB),                      X
+               LANG=COBOL,TIOAPFX=YES,MAPATTS=(COLOR,HILIGHT)           
+SUMDATA DFHMDI SIZE=(24,80),LINE=1,COLUMN=1                             
+*PANEL TITLE                                                            
+        DFHMDF POS=(01,20),LENGTH=47,COLOR=BLUE,                       X
+               INITIAL='CERTIFICATE MANAGEMENT SYSTEM/DATASUM'          
+*PANEL AREA SEPARATOR                                                   
+        DFHMDF POS=(02,01),LENGTH=78,COLOR=BLUE,HILIGHT=UNDERLINE       
+        DFHMDF POS=(02,80),LENGTH=01                                    
+*DISCRIPTIVE TEXT                                                       
+        DFHMDF POS=(04,01),LENGTH=70,ATTRB=ASKIP,COLOR=NEUTRAL,        X
+               INITIAL='PLEASE ENTER THE DATE OF START AND END.'        
+        DFHMDF POS=(10,05),LENGTH=11,ATTRB=ASKIP,COLOR=NEUTRAL,        X
+               INITIAL='START DATE:'                                    
+SDATE   DFHMDF POS=(10,17),LENGTH=10,ATTRB=IC,HILIGHT=UNDERLINE         
+        DFHMDF POS=(10,28),LENGTH=15,INITIAL='SUCH:2017/06/09'          
+        DFHMDF POS=(11,05),LENGTH=11,ATTRB=ASKIP,COLOR=NEUTRAL,        X
+               INITIAL='END   DATE:'                                    
+EDATE   DFHMDF POS=(11,17),LENGTH=10,HILIGHT=UNDERLINE                  
+        DFHMDF POS=(11,28),LENGTH=15,INITIAL='SUCH:2017/06/09'          
+*RETUEN AREA                                                            
+        DFHMDF POS=(21,01),LENGTH=20,COLOR=NEUTRAL,                    X
+               INITIAL='THE SUM OF DATA IS'                             
+RETURNS DFHMDF POS=(21,22),LENGTH=12,COLOR=BLUE,ATTRB=NUM,             X
+               HILIGHT=UNDERLINE                                        
+        DFHMDF POS=(21,35),LENGTH=01                                    
+*MESSAGE AREA                                                           
+SUMMSG  DFHMDF POS=(22,01),LENGTH=70,COLOR=NEUTRAL                      
+*FUNCTION KEY FIELD                                                     
+        DFHMDF POS=(24,01),LENGTH=31,COLOR=BLUE,                       X
+               INITIAL=' F1=EXIT  F3=RETURN  F12=CANCEL'                
+MONEYS  DFHMDI SIZE=(24,80),LINE=1,COLUMN=1                             
+*PANEL TITLE                                                            
+        DFHMDF POS=(01,20),LENGTH=50,COLOR=BLUE,                       X
+               INITIAL='CERTIFICATE MANAGEMENT SYSTEM/USED MONEY'       
+*PANEL AREA SEPARATOR                                                   
+        DFHMDF POS=(02,01),LENGTH=78,COLOR=BLUE,HILIGHT=UNDERLINE       
+        DFHMDF POS=(02,80),LENGTH=01                                    
+*DETAIL                                                                 
+        DFHMDF POS=(10,05),LENGTH=50,ATTRB=ASKIP,COLOR=NEUTRAL,        X
+               INITIAL='THE USED MONEY OF PRESENT MOUTH IS:'            
+SUMMON  DFHMDF POS=(11,34),LENGTH=12,COLOR=BLUE,HILIGHT=UNDERLINE,     X
+               ATTRB=NUM                                                
+        DFHMDF POS=(11,47),LENGTH=01                                    
+*MESSAGE AREA                                                           
+MONEMSG DFHMDF POS=(21,01),LENGTH=70,COLOR=NEUTRAL                      
+*FUNCTION KEY FIELD                                                     
+        DFHMDF POS=(24,01),LENGTH=31,COLOR=BLUE,                       X
+               INITIAL=' F1=EXIT  F3=RETURN  F12=CANCEL'                
+        DFHMSD TYPE=FINAL                                               
+               END                                                      
+
+
+
+
+TECH
+STU100A DFHMSD TYPE=MAP,MODE=INOUT,CTRL=(FREEKB),                      X
+               LANG=COBOL,TIOAPFX=YES,MAPATTS=(COLOR,HILIGHT)           
+DISPIN  DFHMDI SIZE=(24,80),LINE=1,COLUMN=1                             
+        DFHMDF POS=(2,1),LENGTH=13,COLOR=BLUE,INITIAL='TEACHER INFO:'   
+        DFHMDF POS=(3,1),LENGTH=78,HILIGHT=UNDERLINE                    
+        DFHMDF POS=(3,80),LENGTH=1                                      
+        DFHMDF POS=(5,1),LENGTH=15,INITIAL='TEACHER NUMBER:'            
+NUMBER  DFHMDF POS=(5,17),LENGTH=5,ATTRB=(IC,UNPROT)                    
+        DFHMDF POS=(6,1),LENGTH=13,INITIAL='TEACHER NAME:'              
+NAME    DFHMDF POS=(6,15),LENGTH=12,ATTRB=PROT                          
+        DFHMDF POS=(7,1),LENGTH=4,INITIAL='SEX:'                        
+SEX     DFHMDF POS=(7,6),LENGTH=6,ATTRB=PROT                            
+        DFHMDF POS=(8,1),LENGTH=6,INITIAL='LEVEL:'                      
+LEVEL   DFHMDF POS=(8,8),LENGTH=14,ATTRB=PROT                           
+        DFHMDF POS=(9,1),LENGTH=4,INITIAL='TEL:'                        
+ TEL     DFHMDF POS=(9,6),LENGTH=11,ATTRB=PROT                           
+         DFHMDF POS=(10,1),LENGTH=7,INITIAL='SALARY:'                    
+ SALARY  DFHMDF POS=(10,9),LENGTH=5,ATTRB=PROT                           
+ INQUIR  DFHMDI SIZE=(24,80),LINE=1,COLUMN=1                             
+         DFHMDF POS=(2,1),LENGTH=13,COLOR=BLUE,INITIAL='TEACHER INFO:'   
+         DFHMDF POS=(3,1),LENGTH=78,HILIGHT=UNDERLINE                    
+         DFHMDF POS=(3,80),LENGTH=1                                      
+         DFHMDF POS=(5,1),LENGTH=15,INITIAL='TEACHER NUMBER:'            
+ INQNUM  DFHMDF POS=(5,17),LENGTH=5,ATTRB=(IC,UNPROT)                    
+         DFHMSD TYPE=FINAL                                               
+         END                                                             
